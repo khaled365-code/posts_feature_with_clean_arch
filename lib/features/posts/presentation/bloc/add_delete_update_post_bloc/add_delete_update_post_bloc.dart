@@ -1,6 +1,9 @@
 import 'package:bloc/bloc.dart';
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:posts_app_with_clean_arch/features/posts/domain/entities/posts_entity.dart';
 import 'package:posts_app_with_clean_arch/features/posts/domain/usecases/add_post_use_case.dart';
@@ -13,13 +16,19 @@ part 'add_delete_update_post_event.dart';
 part 'add_delete_update_post_state.dart';
 
 class AddDeleteUpdatePostBloc extends Bloc<AddDeleteUpdatePostEvent, AddDeleteUpdatePostState> {
+
   final AddPostUseCase addPostUseCase;
   final UpdatePostUseCase updatePostUseCase;
   final DeletePostUseCase deletePostUseCase;
-  AddDeleteUpdatePostBloc({required this.addPostUseCase,required this.updatePostUseCase,required this.deletePostUseCase}) : super(AddDeleteUpdatePostInitial()) {
+  static AddDeleteUpdatePostBloc get(context) => BlocProvider.of(context);
+  AddDeleteUpdatePostBloc({required this.addPostUseCase,required this.updatePostUseCase,required this.deletePostUseCase}) : super(AddDeleteUpdatePostInitial())
+  {
+
     on<AddDeleteUpdatePostEvent>((event, emit) async {
+
       if (event is AddPostEvent)
       {
+
         emit(AddDeleteUpdatePostLoadingState());
         final response = await addPostUseCase(postEntity: event.post);
         emit(_getPostState(response, 'post added successfully'));
@@ -64,4 +73,10 @@ class AddDeleteUpdatePostBloc extends Bloc<AddDeleteUpdatePostEvent, AddDeleteUp
     }
 
   }
+
+
+  TextEditingController titleForAddPostController=TextEditingController();
+  TextEditingController bodyForAddPostController=TextEditingController();
+  GlobalKey<FormState> addPostFormKey=GlobalKey();
+
 }

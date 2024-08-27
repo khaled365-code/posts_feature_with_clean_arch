@@ -56,10 +56,9 @@ class PostsRepoImplementation implements PostsRepo
       {
         PostsModel postModel =
         PostsModel(
-            userId: postEntity.userId,
             title: postEntity.title,
             body: postEntity.body,
-            postId: postEntity.postId);
+            postId: postEntity.postId!);
 
         await postsRemoteDataSource.updatePost(postsModel: postModel);
         return const Right(unit);
@@ -78,10 +77,8 @@ class PostsRepoImplementation implements PostsRepo
       try {
         PostsModel postModel =
         PostsModel(
-            userId: postEntity.userId,
             title: postEntity.title,
-            body: postEntity.body,
-            postId: postEntity.postId);
+            body: postEntity.body,);
 
         await postsRemoteDataSource.addPost(postsModel: postModel);
         return const Right(unit);

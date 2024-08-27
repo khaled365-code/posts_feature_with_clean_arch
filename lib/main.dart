@@ -12,13 +12,7 @@ void main() async
   WidgetsFlutterBinding.ensureInitialized();
 
   await di.setupServiceLocator();
-  runApp(MultiBlocProvider(providers: [
-    BlocProvider(
-      create: (context) => di.sl<PostsBloc>(),
-    ),
-    BlocProvider(
-        create: (context) =>  di.sl<AddDeleteUpdatePostBloc>())
-  ], child: const PostsApp()));
+  runApp(const PostsApp());
 }
 
 

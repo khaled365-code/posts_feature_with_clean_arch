@@ -1,10 +1,13 @@
 
 
 
+import 'dart:io';
+
 import 'package:get_it/get_it.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:posts_app_with_clean_arch/features/posts/data/datasource/posts_remote_data_source.dart';
 import 'package:posts_app_with_clean_arch/features/posts/data/repos/posts_repo_implementation.dart';
+import 'package:posts_app_with_clean_arch/features/posts/domain/repos/posts_domain_repo.dart';
 import 'package:posts_app_with_clean_arch/features/posts/domain/usecases/add_post_use_case.dart';
 import 'package:posts_app_with_clean_arch/features/posts/domain/usecases/delete_post_use_case.dart';
 import 'package:posts_app_with_clean_arch/features/posts/domain/usecases/get_posts_use_case.dart';
@@ -22,35 +25,36 @@ setupServiceLocator() async
 {
   final SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
   // network info
-  sl.registerLazySingleton(() => NetworkInfoImpl(internetConnectionChecker: sl()),);
-  sl.registerLazySingleton(() => InternetConnectionChecker(),);
-  sl.registerLazySingleton(() => http.Client(),);
+  sl.registerLazySingleton<InternetConnectionChecker>(() => InternetConnectionChecker(),);
+  sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(internetConnectionChecker: sl.get<InternetConnectionChecker>()),);
+  sl.registerLazySingleton<http.Client>(() => http.Client(),);
 
   //shared preferences
-  sl.registerLazySingleton(() => sharedPreferences);
+  sl.registerLazySingleton<SharedPreferences>(() => sharedPreferences);
 
   // data sources
-  sl.registerLazySingleton(() => PostsRemoteDataSourceImplWithHttp(client: sl()),);
-  sl.registerLazySingleton(() => PostsLocalDataSourceImpl(sharedPreferences: sl()),);
+  sl.registerLazySingleton<PostsRemoteDataSource>(() => PostsRemoteDataSourceImplWithHttp(client: sl.get<http.Client>()),);
+  sl.registerLazySingleton<PostsLocalDataSource>(() => PostsLocalDataSourceImpl(sharedPreferences: sl.get<SharedPreferences>()),);
 
   // repository
-  sl.registerLazySingleton(() => PostsRepoImplementation(
-      networkInfo: sl(),
-      postsLocalDataSource: sl(),
-      postsRemoteDataSource: sl()),);
+  sl.registerLazySingleton<PostsRepo>(() => PostsRepoImplementation(
+      networkInfo: sl.get<NetworkInfo>(),
+      postsLocalDataSource: sl.get<PostsLocalDataSource>(),
+      postsRemoteDataSource: sl.get<PostsRemoteDataSource>()),);
+
 
   // use cases
-  sl.registerLazySingleton(() => AddPostUseCase(postsDomainRepo: sl()),);
-  sl.registerLazySingleton(() => DeletePostUseCase(postsDomainRepo: sl()),);
-  sl.registerLazySingleton(() => UpdatePostUseCase(postsDomainRepo: sl()),);
-  sl.registerLazySingleton(() => GetPostsUseCase(postsDomainRepo: sl()),);
+  sl.registerLazySingleton<AddPostUseCase>(() => AddPostUseCase(postsDomainRepo: sl.get<PostsRepo>()),);
+  sl.registerLazySingleton<DeletePostUseCase>(() => DeletePostUseCase(postsDomainRepo: sl.get<PostsRepo>()),);
+  sl.registerLazySingleton<UpdatePostUseCase>(() => UpdatePostUseCase(postsDomainRepo: sl.get<PostsRepo>()),);
+  sl.registerLazySingleton<GetPostsUseCase>(() => GetPostsUseCase(postsDomainRepo: sl.get<PostsRepo>()),);
 
   //blocs
-  sl.registerFactory(() => PostsBloc(getPostsUseCase: sl()),);
+  sl.registerFactory(() => PostsBloc(getPostsUseCase: sl.get<GetPostsUseCase>()),);
   sl.registerFactory(() => AddDeleteUpdatePostBloc(
-      addPostUseCase: sl(),
-      updatePostUseCase: sl(),
-      deletePostUseCase: sl()),);
+      addPostUseCase: sl.get<AddPostUseCase>(),
+      updatePostUseCase: sl.get<UpdatePostUseCase>(),
+      deletePostUseCase:sl.get<DeletePostUseCase>()),);
 
 
 
